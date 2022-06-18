@@ -76,3 +76,4 @@ Hspd = int(input("请输入勇者的速度数值："))
 
 HeroU = Hero(Hname, Hhp, Hatt, Hdeff, Hspd)
 battle(bcounter)
+print("hallo")
