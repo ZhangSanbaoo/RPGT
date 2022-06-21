@@ -2,8 +2,7 @@ from logging import critical
 from os import WIFSIGNALED
 from signal import pause
 from telnetlib import WILL, theNULL
-import os
-
+import random
 
 class Monster:
     Mcount = 0
@@ -17,10 +16,25 @@ class Monster:
         Monster.Mcount += 1
         self.id = Monster.Mcount
         self.jdt = 0
-
+        self.life = True
     def __str__(self):
         return "Name: %s, HP: %s, Att: %s, Deff: %s, Speed: %s, ID: %s" % (self.name, self.hp, self.att, self.deff, self.spd, self.id)
 
+    def Mattack(self,HeroU):
+        if HeroU.deffst == False:
+            temp = self.att - HeroU.deff
+            if temp >0:
+                HeroU.hp -= temp
+                print("%s受到了%d点伤害"%(HeroU.name,temp))
+            else:
+                print("%s没有造成伤害"%self.name)
+        else :
+            temp = self.att - HeroU.deff*2
+            if temp >0:
+                HeroU.hp -= temp
+                print("%s受到了%d点伤害"%(HeroU.name,temp))
+            else:
+                print("%s没有造成伤害"%self.name)
 
 class Hero:
     def __init__(self, name, hp, att, deff, spd):
@@ -29,9 +43,16 @@ class Hero:
         self.att = att
         self.deff = deff
         self.spd = spd
+        self.deffst = False
+        self.jdt = 0
 
     def Hattack(self, list_monster):
-        list_monster[0].hp -= self.att
+        temp = self.att - list_monster[0].deff
+        list_monster[0].hp -= temp
+        print("%s对%s造成了%d点伤害！"%(self.name,list_monster[0].name,temp))
+        if list_monster[0].hp <= 0:
+            print("%s被击败了！"%list_monster[0].name)
+            del(list_monster[0])
 
 
 def battle(HeroU, list_monster) -> None:
@@ -41,23 +62,33 @@ def battle(HeroU, list_monster) -> None:
         if len(list_monster) == 0:
             print("%s获得了胜利！" % HeroU.name)
             round = False
+        elif HeroU.hp <= 0:
+            print("%s被击败了！" % HeroU.name)
         else:
             HeroU.jdt += HeroU.spd
             if HeroU.jdt >= 20:
                 if act() == 1:
+                    HeroU.Hattack(list_monster)
+                    HeroU.jdt = 0
                     pass
-                if act() == 2:
+                elif act() == 2:
+                    HeroU.jdt = 0
                     pass
-                if act() == 3:
+                elif act() == 3:
+                    HeroU.jdt = 0
                     pass
-                if act() == 4:
+                elif act() == 4:
+                    HeroU.jdt = 0
                     pass
-                if act() == 5:
+                elif act() == 5:
+                    HeroU.jdt = 0
                     pass
             for i in list_monster:
                 i.jdt += i.spd
-                if i.stat == False:
-                    list_monster.remove(i)
+                if i.jdt >= 20:
+                    i.Mattack(HeroU)
+                    i.jdt = 0
+                    pass
 
 
 def act():
@@ -71,7 +102,8 @@ def act():
             return selection
     except ValueError:
         print("请输入1-5之间的数字！")
-        act()
+        return act()
+
 
 HeroU = Hero("鲁卡", 100, 20, 15, 5)
 Monster1 = Monster("Orc", 100, 15, 8, 2)
@@ -80,8 +112,8 @@ Monster2 = Monster("Hilichurl", 80, 12, 6, 3)
 list_monster = []
 list_monster.append(Monster1)
 list_monster.append(Monster2)
-# battle(HeroU, list_monster)
-print(act())
+battle(HeroU, list_monster)
+
 # Hname = input("请输入勇者姓名：")
 # Hhp = int(input("请输入勇者的生命值："))
 # Hatt = int(input("请输入勇者的攻击数值："))
