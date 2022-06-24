@@ -1,3 +1,5 @@
+from ast import Break
+from glob import escape
 from logging import critical
 from os import WIFSIGNALED
 from signal import pause
@@ -43,8 +45,9 @@ class Hero:
         self.att = att
         self.deff = deff
         self.spd = spd
-        self.deffst = False
-        self.jdt = 0
+        self.deffst = False  #防御状态
+        self.jdt = 0         #进度条
+        self.taop = 50       #逃跑几率
 
     def Hattack(self, list_monster):
         temp = self.att - list_monster[0].deff
@@ -54,8 +57,16 @@ class Hero:
             print("%s被击败了！"%list_monster[0].name)
             del(list_monster[0])
 
+    def Hescape(self,escap):
+        temp = random.randint(1,100)
+        if self.taop < temp:
+            print("%s未能逃跑成功。。。" %self.name)
+        else:
+            print("%s逃跑了。。。" %self.name)
+            escap = 0
+            return escap
 
-def battle(HeroU, list_monster) -> None:
+def battle(HeroU, list_monster,round) -> None:
     round = True
     while round:
         list_monster = list_monster
@@ -67,22 +78,29 @@ def battle(HeroU, list_monster) -> None:
         else:
             HeroU.jdt += HeroU.spd
             if HeroU.jdt >= 20:
-                if act() == 1:
+                HeroU.deffst = False
+                temp = act()
+                if temp == 1:
                     HeroU.Hattack(list_monster)
                     HeroU.jdt = 0
                     pass
-                elif act() == 2:
+                if temp == 2:
                     HeroU.jdt = 0
                     pass
-                elif act() == 3:
+                if temp == 3:
+                    HeroU.deffst = True
                     HeroU.jdt = 0
                     pass
-                elif act() == 4:
+                if temp == 4:
                     HeroU.jdt = 0
                     pass
-                elif act() == 5:
+                if temp == 5:
                     HeroU.jdt = 0
-                    pass
+                    escap = 1
+                    a = HeroU.Hescape(escap)
+                    if a == 0:
+                        break
+
             for i in list_monster:
                 i.jdt += i.spd
                 if i.jdt >= 20:
@@ -112,7 +130,7 @@ Monster2 = Monster("Hilichurl", 80, 12, 6, 3)
 list_monster = []
 list_monster.append(Monster1)
 list_monster.append(Monster2)
-battle(HeroU, list_monster)
+battle(HeroU, list_monster,round)
 
 # Hname = input("请输入勇者姓名：")
 # Hhp = int(input("请输入勇者的生命值："))
