@@ -6,106 +6,157 @@ from signal import pause
 from telnetlib import WILL, theNULL
 import random
 
-class Monster:
-    Mcount = 0
+class Charact:
 
-    def __init__(self, name, hp, att, deff, spd):
-        self.name = name
-        self.hp = hp
-        self.att = att
-        self.deff = deff
-        self.spd = spd
-        Monster.Mcount += 1
-        self.id = Monster.Mcount
-        self.jdt = 0
-        self.life = True
+    def __init__(self, name, hp, att, deff, spd, taop):
+        self.name = name        # 名字
+        self.hp = hp            # 血量
+        self.att = att          # 攻击力
+        self.deff = deff        # 防御力
+        self.spd = spd          # 速度
+        self.deffst = False     # 防御状态
+        self.jdt = 0            # 进度条
+        self.taop = taop        # 逃跑几率
+        self.player = False     # 可操控角色确认
+        self.boss = False       # Boss确认
     def __str__(self):
-        return "Name: %s, HP: %s, Att: %s, Deff: %s, Speed: %s, ID: %s" % (self.name, self.hp, self.att, self.deff, self.spd, self.id)
-
-    def Mattack(self,HeroU):
-        if HeroU.deffst == False:
-            temp = self.att - HeroU.deff
-            if temp >0:
-                HeroU.hp -= temp
-                print("%s受到了%d点伤害"%(HeroU.name,temp))
-            else:
-                print("%s没有造成伤害"%self.name)
-        else :
-            temp = self.att - HeroU.deff*2
-            if temp >0:
-                HeroU.hp -= temp
-                print("%s受到了%d点伤害"%(HeroU.name,temp))
-            else:
-                print("%s没有造成伤害"%self.name)
-
-class Hero:
-    def __init__(self, name, hp, att, deff, spd):
-        self.name = name
-        self.hp = hp
-        self.att = att
-        self.deff = deff
-        self.spd = spd
-        self.deffst = False  #防御状态
-        self.jdt = 0         #进度条
-        self.taop = 50       #逃跑几率
-
-    def Hattack(self, list_monster):
-        temp = self.att - list_monster[0].deff
-        list_monster[0].hp -= temp
-        print("%s对%s造成了%d点伤害！"%(self.name,list_monster[0].name,temp))
-        if list_monster[0].hp <= 0:
-            print("%s被击败了！"%list_monster[0].name)
-            del(list_monster[0])
-
-    def Hescape(self,escap):
+        return "Name: %s, HP: %s, Att: %s, Deff: %s, Speed: %s, ID: %s" % (self.name, self.hp, self.att, self.deff, self.spd)
+    def escape(self, escap):
+        print("%s尝试逃跑。。"%self.name)
         temp = random.randint(1,100)
-        if self.taop < temp:
-            print("%s未能逃跑成功。。。" %self.name)
-        else:
-            print("%s逃跑了。。。" %self.name)
+        if self.taop >= temp:
+            print("%s逃跑成功！"%self.name)
             escap = 0
             return escap
-
-def battle(HeroU, list_monster,round) -> None:
-    round = True
-    while round:
-        list_monster = list_monster
-        if len(list_monster) == 0:
-            print("%s获得了胜利！" % HeroU.name)
-            round = False
-        elif HeroU.hp <= 0:
-            print("%s被击败了！" % HeroU.name)
         else:
-            HeroU.jdt += HeroU.spd
-            if HeroU.jdt >= 20:
-                HeroU.deffst = False
-                temp = act()
-                if temp == 1:
-                    HeroU.Hattack(list_monster)
-                    HeroU.jdt = 0
-                    pass
-                if temp == 2:
-                    HeroU.jdt = 0
-                    pass
-                if temp == 3:
-                    HeroU.deffst = True
-                    HeroU.jdt = 0
-                    pass
-                if temp == 4:
-                    HeroU.jdt = 0
-                    pass
-                if temp == 5:
-                    HeroU.jdt = 0
-                    escap = 1
-                    a = HeroU.Hescape(escap)
-                    if a == 0:
+            print("%s逃跑失败。。。"%self.name)
+    def Pattack(self,monster_list):
+        print("场上怪物：")
+        for i in range(len(monster_list)):
+            a = i+1
+            print("%s. %s\n当前血量：%d"%(a,monster_list[i].name,monster_list[i].hp))
+        temp = int(input("请选择攻击对象(编号)："))
+        temp -= 1
+        mons = monster_list[temp]
+        if mons.deffst == True:
+            dmg = self.att - mons.deff*2
+            mons.hp -= dmg
+            print("%s对%s造成了%d点伤害！"%(self.name,mons.name,dmg))
+            if mons.hp <= 0:
+                print("%s被击败了！"%mons.name)
+                monster_list.pop(temp)
+                for i in range(len(battle_list)):
+                    if battle_list[i] == mons:
+                        battle_list.pop(i)
                         break
+            return battle_list
+        else:
+            dmg = self.att - monster_list[temp].deff
+            monster_list[temp].hp -= dmg
+            print("%s对%s造成了%d点伤害！"%(self.name,monster_list[temp].name,dmg))
+            if mons.hp <= 0:
+                print("%s被击败了！"%mons.name)
+                monster_list.pop(temp)
+                for i in range(len(battle_list)):
+                    if battle_list[i] == mons:
+                        battle_list.pop(i)
+                        break
+            return battle_list
+    def Mattack(self,player_list):
+        temp = random.randint(1,2)
+        if temp == 1:
+            target = random.randint(1,len(player_list))-1
+            pla = player_list[target]
+            if pla.deffst == True:
+                dmg = self.att - pla.deff*2
+                pla.hp -= dmg
+                print("%s对%s造成了%d点伤害！"%(self.name,pla.name,dmg))
+                if pla.hp <= 0:
+                    print("%s被击败了！"%pla.name)
+                    player_list.pop(target)
+                    for i in range(len(battle_list)):
+                        if battle_list[i] == pla:
+                            battle_list.pop(i)
+                            break
+                return battle_list
+            else:
+                dmg = self.att - pla.deff
+                pla.hp -= dmg
+                print("%s对%s造成了%d点伤害！"%(self.name,pla.name,dmg))
+                if pla.hp <= 0:
+                    print("%s被击败了！"%pla.name)
+                    player_list.pop(target)
+                    for i in range(len(battle_list)):
+                        if battle_list[i] == pla:
+                            battle_list.pop(i)
+                            break
+                return battle_list
+        if temp == 2:
+            print("还未添加怪物技能选项")
+        pass
 
-            for i in list_monster:
-                i.jdt += i.spd
-                if i.jdt >= 20:
-                    i.Mattack(HeroU)
-                    i.jdt = 0
+def battle(battle_list, round) -> None:
+    round = True
+    player_list = []
+    monster_list = []
+    for i in range(len(battle_list)):
+        if battle_list[i].player == True:
+            player_list.append(battle_list[i])
+        else:
+            monster_list.append(battle_list[i])
+    while round:
+        # for循环倒跑，此处加入battle list更新代码
+        for i in range(len(battle_list)):
+            if len(monster_list) == 0:
+                print("%s的队伍获得了胜利！"%Hero.name)
+                break
+            if len(player_list) == 0:
+                print("%s的队伍被击败了。。。"%Hero.name)
+                break
+            battle_list[i].jdt += battle_list[i].spd
+            if battle_list[i].jdt >= 100:
+                battle_list[i].jdt -= 100
+                battle_list[i].deffst = False
+                if battle_list[i].player == True:
+                    print("%s\n当前血量:%d"%(battle_list[i].name,battle_list[i].hp))
+                    temp = act()
+                    if temp == 1:
+                        battle_list_len = len(battle_list)
+                        battle_list = battle_list[i].Pattack(monster_list)
+                        # 对i进行判断，如果i被删除，则i+1变为i，如果i不被删除，则i不变
+                        if battle_list_len != len(battle_list):
+                            i = i - 1
+                        pass
+                    if temp == 2:
+                        print("还未添加技能功能。")
+                        pass
+                    if temp == 3:
+                        battle_list[i].deffst = True
+                        pass
+                    if temp == 4:
+                        print("还未添加物品功能。")
+                        pass
+                    if temp == 5:
+                        escap = 1
+                        escap = battle_list[i].escape(escap)
+                        if escap == 0:
+                            break
+                else:
+                    mact = random.randint(1,3)
+                    cha = battle_list[i]
+                    if mact == 1:
+                        cha.Mattack(player_list)
+                        pass
+                    if mact == 2:
+                        cha.deffst = True
+                        pass
+                    if cha.hp <= cha.hp*0.1 and cha.boss == False:
+                        if mact == 3:
+                            escap = 1
+                            escap = cha.escape(escap)
+                            if escap == 0:
+                                monster_list.remove(cha)
+                                battle_list.remove(cha)
                     pass
 
 
@@ -123,62 +174,16 @@ def act():
         return act()
 
 
-HeroU = Hero("鲁卡", 100, 20, 15, 5)
-Monster1 = Monster("Orc", 100, 15, 8, 2)
-Monster2 = Monster("Hilichurl", 80, 12, 6, 3)
+Hero = Charact("鲁卡", 100, 20, 15, 5, 50)
+Hero.player = True
+Npc1 = Charact("蕾娜",90,15,10,6, 50)
+Npc1.player = True
+Monster1 = Charact("Orc", 100, 15, 8, 2, 15)
+Monster2 = Charact("Hilichurl", 80, 12, 6, 3, 15)
 
-list_monster = []
-list_monster.append(Monster1)
-list_monster.append(Monster2)
-battle(HeroU, list_monster,round)
-
-# Hname = input("请输入勇者姓名：")
-# Hhp = int(input("请输入勇者的生命值："))
-# Hatt = int(input("请输入勇者的攻击数值："))
-# Hdeff = int(input("请输入勇者的防御数值："))
-# Hspd = int(input("请输入勇者的速度数值："))
-
-# HeroU = Hero(Hname, Hhp, Hatt, Hdeff, Hspd)
-
-# Monster1.battle(bcounter)
-# Monster2.battle(bcounter)
-
-# def battle(self, bcounter):
-#     print("%s与%s相遇了。" % (HeroU.name, self.name))
-#     if self.spd > HeroU.spd:
-#         bcounter = 1
-#         print("%s对%s发动了攻击" % (self.name, HeroU.name))
-#         self.bp(bcounter)
-#     else:
-#         bcounter = 2
-#         print("%s对%s发动了攻击" % (HeroU.name, self.name))
-#         self.bp(bcounter)
-
-#     def bp(self, bcounter):
-#         while True:
-#             if bcounter % 2 == 0:
-#                 diff = HeroU.att - self.deff
-#                 bcounter += 1
-#                 if diff <= 0:
-#                     print("%s造成了0点伤害。" % HeroU.name)
-#                 else:
-#                     self.hp -= diff
-#                     print("%s造成了%d点伤害。" % (HeroU.name, diff))
-#                     if self.hp > 0:
-#                         pass
-#                     else:
-#                         print("%s被打败了" % self.name)
-#                         break
-#             else:
-#                 diff = self.att - HeroU.deff
-#                 bcounter += 1
-#                 if diff <= 0:
-#                     print("%s造成了0点伤害" % self.name)
-#                 else:
-#                     HeroU.hp -= diff
-#                     print("%s造成了%d点伤害" % (self.name, diff))
-#                     if HeroU.hp > 0:
-#                         pass
-#                     else:
-#                         print("%s被打败了" % HeroU.name)
-#                         break
+battle_list = []
+battle_list.append(Hero)
+battle_list.append(Npc1)
+battle_list.append(Monster1)
+battle_list.append(Monster2)
+battle(battle_list, round)
